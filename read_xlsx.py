@@ -21,20 +21,16 @@ def read_xlsx(file,container=list,by_row=True):
         sheet=workbook[sheets[k]]
         n1=sheet.max_row
         n2=sheet.max_column
-        lis=[]
         if by_row[k]:
-            for i in range(n1):
-                line=[]
-                for j in range(n2):
-                    line.append(sheet.cell(row=i+1,column=j+1).value)
-                lis.append(container(line))
+            d[sheet.title]=container(container(sheet.cell(row=i+1,
+                                                          column=j+1).value
+                                               for j in range(n2))
+                                     for i in range(n1))
         else:
-            for i in range(n2):
-                line=[]
-                for j in range(n1):
-                    line.append(sheet.cell(row=j+1,column=i+1).value)
-                lis.append(container(line))
-        d[sheet.title]=container(lis)
+            d[sheet.title]=container(container(sheet.cell(row=i+1,
+                                                          column=j+1).value
+                                               for i in range(n1))
+                                     for j in range(n2))
     return d
 
 def write_xlsx(d,output,by_row=True):
@@ -47,7 +43,8 @@ def write_xlsx(d,output,by_row=True):
     for k in range(ns):
         sheet=names[k]
         lis=d[sheet]
-        sheets.append(workbook.create_sheet())
+        # if only create_sheet(), the first empty 'Sheet' is quite annoying
+        sheets.append(workbook.active if k==0 else workbook.create_sheet())
         sheets[-1].title=sheet
         if by_row[k]:
             n1=len(d[sheet])

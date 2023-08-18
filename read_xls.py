@@ -30,20 +30,15 @@ def read_xls(file,container=list,by_row=True):
         worksheet=workbook.sheet_by_name(sheet)
         nrows=worksheet.nrows
         ncols=worksheet.ncols
-        values=[]
+        #values=[]
         if by_row[k]:
-            for i in range(nrows):
-                line=[]
-                for j in range(ncols):
-                    line.append(worksheet.cell_value(i,j))
-                values.append(container(line))
+            d[sheet]=container(container(worksheet.cell_value(i,j)
+                                         for j in range(ncols))
+                               for i in range(nrows))
         else:
-            for i in range(ncols):
-                line=[]
-                for j in range(nrows):
-                    line.append(worksheet.cell_value(j,i))
-                values.append(container(line))
-        d[sheet]=container(values)
+            d[sheet]=container(container(worksheet.cell_value(i,j)
+                                         for i in range(nrows))
+                               for j in range(ncols))
     return d
 
 def write_xls(d,output,encoding='utf-8',style_compression=0,by_row=True):
