@@ -83,6 +83,7 @@ def write_xls(d,output,encoding='utf-8',style_compression=0,by_row=True,size=Non
     keys=list(d.keys())
     ns=len(keys)
     for k in range(ns):
+        sheet=keys[k]
         if by_row[k]:
             sheets.append(workbook.add_sheet(keys[k],cell_overwrite_ok=True))
             n1=len(d[keys[k]])
@@ -116,3 +117,5 @@ def write_xls(d,output,encoding='utf-8',style_compression=0,by_row=True,size=Non
                 if sheet in size.keys():
                     manage_size(sheets[-1],size[sheet],max(len(j) for j in d[keys[k]]),n1)
     workbook.save(output)
+
+__all__=['read_xls','write_xls',]

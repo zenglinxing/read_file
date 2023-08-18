@@ -45,7 +45,6 @@ size : size of unit cell
     size={sheetname:(widths,heights)}
         widths, heights could be a number or a list/tuple
 '''
-
 def read_xlsx(file,container=list,by_row=True):
     workbook=openpyxl.load_workbook(file)
     sheets=workbook.sheetnames
@@ -188,3 +187,5 @@ def select_xlsx(file,sheet_select,container=list,by_row=True):
                                                for i in range(n1))
                                      for j in range(n2))
     return d
+
+__all__=['read_xlsx','write_xlsx','add_xlsx','select_xlsx',]
