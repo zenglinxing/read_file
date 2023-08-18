@@ -1,4 +1,4 @@
-import openpyxl
+import openpyxl,os
 
 def ab_order(num):
     count=1;comp=25
@@ -91,6 +91,9 @@ def write_xlsx(d,output,by_row=True,size=None):
             # manage size
             if size==None:
                 continue
+            elif isinstance(size,(tuple,list)):
+                if len(size)==2:
+                    manage_size(sheets[-1],size,n1,max(len(j) for j in lis))
             else:
                 if sheet in size.keys():
                     manage_size(sheets[-1],size[sheet],n1,max(len(j) for j in lis))
@@ -103,7 +106,85 @@ def write_xlsx(d,output,by_row=True,size=None):
             # manage size
             if size==None:
                 continue
+            elif isinstance(size,(tuple,list)):
+                if len(size)==2:
+                    manage_size(sheets[-1],size,max(len(j) for j in lis),n1)
             else:
                 if sheet in size.keys():
                     manage_size(sheets[-1],size[sheet],max(len(j) for j in lis),n1)
     workbook.save(filename=output)
+
+def add_xlsx(d,file,by_row=True,size=None):
+    if os.path.exists(file):
+        workbook=openpyxl.load_workbook(file)
+    else:
+        workbook=openpyxl.Workbook()
+    sheets=[]
+    names=list(d.keys())
+    ns=len(names)
+    if by_row in (True,False):
+        by_row=(by_row,)*ns
+    for k in range(ns):
+        sheet=names[k]
+        lis=d[sheet]
+        # if only create_sheet(), the first empty 'Sheet' is quite annoying
+        sheets.append(workbook.active if k==0 and not os.path.exists(file) else workbook.create_sheet())
+        sheets[-1].title=sheet
+        if by_row[k]:
+            n1=len(d[sheet])
+            for i in range(n1):
+                n2=len(lis[i])
+                for j in range(n2):
+                    sheets[-1].cell(i+1,j+1,lis[i][j])
+            # manage size
+            if size==None:
+                continue
+            elif isinstance(size,(tuple,list)):
+                if len(size)==2:
+                    manage_size(sheets[-1],size,n1,max(len(j) for j in lis))
+            else:
+                if sheet in size.keys():
+                    manage_size(sheets[-1],size[sheet],n1,max(len(j) for j in lis))
+        else:
+            n1=len(d[sheet])
+            for i in range(n1):
+                n2=len(lis[i])
+                for j in range(n2):
+                    sheets[-1].cell(j+1,i+1,lis[i][j])
+            # manage size
+            if size==None:
+                continue
+            elif isinstance(size,(tuple,list)):
+                if len(size)==2:
+                    manage_size(sheets[-1],size,max(len(j) for j in lis),n1)
+            else:
+                if sheet in size.keys():
+                    manage_size(sheets[-1],size[sheet],max(len(j) for j in lis),n1)
+    workbook.save(filename=file)
+
+def select_xlsx(file,sheet_select,container=list,by_row=True):
+    workbook=openpyxl.load_workbook(file)
+    sheets=workbook.sheetnames
+    ns=len(sheets)
+    d={}
+    if isinstance(sheet_select,str):
+        sheet_select=(sheet_select,)
+    if by_row in (True,False):
+        by_row=(by_row,)*ns
+    for k in range(ns):
+        sheet=workbook[sheets[k]]
+        if sheet.title not in sheet_select:
+            continue
+        n1=sheet.max_row
+        n2=sheet.max_column
+        if by_row[k]:
+            d[sheet.title]=container(container(sheet.cell(row=i+1,
+                                                          column=j+1).value
+                                               for j in range(n2))
+                                     for i in range(n1))
+        else:
+            d[sheet.title]=container(container(sheet.cell(row=i+1,
+                                                          column=j+1).value
+                                               for i in range(n1))
+                                     for j in range(n2))
+    return d
